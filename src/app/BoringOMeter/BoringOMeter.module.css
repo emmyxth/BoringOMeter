@@ -1,21 +1,24 @@
 .container {
-    width: 100%;
-    max-width: 42rem;
-    margin: 0 auto;
+    width: 100vw;
+    height: 100vh;
+    margin: 0;
     padding: 1rem;
+    background-color: black;
+    display: flex;
+    align-items: center;
+    justify-content: center;
   }
-  
   .card {
     background: white;
     border-radius: 8px;
     box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
-    margin-bottom: 1rem;
+    margin: 0 2rem 1rem 2rem;
     overflow: hidden;
   }
-  
   .cardHeader {
     padding: 1.5rem;
-  color: black;
+    color: black;
+    justify-self: center;
   }
   
   .cardContent {
@@ -54,20 +57,24 @@
     border: none;
     font-weight: 500;
     cursor: pointer;
+    background-color: black;
     transition: background-color 0.2s;
     color: white;
+    margin: 0 auto; /* Center the button */
   }
   
   .button .icon {
-    margin-right: 0.5rem;
+    margin-right: 1rem;
   }
   
   .button.primary {
-    background-color: #3b82f6;
+    background-color: black;
   }
   
   .button.primary:hover {
-    background-color: #2563eb;
+    background-color: white;
+    color: black;
+    border: 2px solid black;
   }
   
   .button.danger {

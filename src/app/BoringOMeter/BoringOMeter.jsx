@@ -168,19 +168,26 @@ const BoringOMeter = () => {
       {step === 'prompt' && (
         <div className={styles.card}>
           <div className={styles.cardHeader}>
+          <p style={{ textAlign: 'center' }}>              
+            Boring-O-Meter
+            </p>
             <h2 >
-              <MessageCircle className={styles.icon} />
+              {/* <MessageCircle className={styles.icon} /> */}
+            🥱
               How boring are you?
             </h2>
           </div>
           <div className={styles.cardContent}>
-            <p className={styles.promptText}>{currentPrompt}</p>
+            <div style={{ border: '1px solid #ccc', borderRadius: '8px', padding: '1rem', marginBottom: '1rem' }}>
+              <p style={{ fontWeight: 'bold', marginBottom: '0.5rem' }}>Prompt</p>
+              <p className={styles.promptText}>{currentPrompt}</p>
+            </div>
             <button 
               onClick={startRecording}
               className={`${styles.button} ${styles.primary}`}
             >
               <Mic className={styles.icon} />
-              Start Recording
+              Try your luck
             </button>
           </div>
         </div>
