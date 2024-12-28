@@ -196,10 +196,9 @@ const BoringOMeter = () => {
       {step === 'recording' && (
         <div className={styles.card}>
           <div className={styles.cardContent}>
-            <div className={styles.recordingIndicator}>
+            <div className={styles.recordingIndicator} style={{ display: 'flex', justifyContent: 'center' }}>
               <Mic className={`${styles.icon} ${styles.recording}`} />
             </div>
-            <p>Recording your response...</p>
             <button 
               onClick={stopRecording}
               className={`${styles.button} ${styles.danger}`}
