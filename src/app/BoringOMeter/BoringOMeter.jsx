@@ -1,8 +1,9 @@
 'use client';
 
 import React, { useState, useRef, useEffect } from 'react';
-import { Mic, StopCircle, RefreshCw, MessageCircle, ArrowRight } from 'lucide-react';
+import { Mic, StopCircle, RefreshCw, ArrowRight } from 'lucide-react';
 import styles from './BoringOMeter.module.css';
+import axios from 'axios'
 
 const CONVERSATION_PROMPTS = [
   "What's something funny that happened to you recently?",
@@ -23,7 +24,6 @@ const useSpeechRecognition = () => {
   const recognition = useRef(null);
 
   useEffect(() => {
-    // Only initialize speech recognition on the client side
     if (typeof window !== 'undefined' && 'webkitSpeechRecognition' in window) {
       recognition.current = new window.webkitSpeechRecognition();
       recognition.current.continuous = true;
@@ -46,14 +46,13 @@ const useSpeechRecognition = () => {
 
 const BoringOMeter = () => {
   const [step, setStep] = useState('prompt');
-  const [currentPrompt, setCurrentPrompt] = useState(CONVERSATION_PROMPTS[0]); // Start with a stable initial value
+  const [currentPrompt, setCurrentPrompt] = useState(CONVERSATION_PROMPTS[0]); 
   const [isRecording, setIsRecording] = useState(false);
   const [analysis, setAnalysis] = useState(null);
-  
+
   const { transcript, setTranscript, recognition } = useSpeechRecognition();
   const mediaRecorder = useRef(null);
 
-  // Move prompt randomization to a useEffect
   useEffect(() => {
     setCurrentPrompt(CONVERSATION_PROMPTS[Math.floor(Math.random() * CONVERSATION_PROMPTS.length)]);
   }, []);
@@ -79,56 +78,27 @@ const BoringOMeter = () => {
     }
   };
 
-  const analyzeResponse = () => {
-    const words = transcript.split(' ');
-    const sentences = transcript.split(/[.!?]+/).filter(Boolean);
-    const improvements = [];
-    
-    sentences.forEach((sentence, idx) => {
-      if (sentence.split(' ').length > 30) {
-        improvements.push({
-          type: 'long_sentence',
-          text: sentence,
-          suggestion: 'Break this into smaller, more digestible points',
-          position: transcript.indexOf(sentence)
-        });
-      }
-    });
-    
-    const fillerWords = ['um', 'uh', 'like', 'you know', 'sort of'];
-    fillerWords.forEach(filler => {
-      let position = transcript.toLowerCase().indexOf(filler);
-      while (position !== -1) {
-        improvements.push({
-          type: 'filler',
-          text: filler,
-          suggestion: 'Remove filler word',
-          position: position
-        });
-        position = transcript.toLowerCase().indexOf(filler, position + 1);
-      }
-    });
-    
-    const metrics = {
-      wordVariety: new Set(words).size / words.length,
-      avgSentenceLength: words.length / sentences.length,
-      personalPronouns: (transcript.match(/\b(I|me|my|we|our)\b/gi) || []).length,
-      questions: (transcript.match(/\?/g) || []).length,
-      emotionalWords: (transcript.match(/\b(love|hate|feel|felt|excited|amazing|wonderful|terrible)\b/gi) || []).length
-    };
-    
-    const score = Math.min(100, Math.max(0,
-      (metrics.wordVariety * 20) +
-      (Math.min(1, Math.max(0, (15 - Math.abs(15 - metrics.avgSentenceLength)) / 15)) * 20) +
-      (Math.min(1, metrics.personalPronouns / 5) * 20) +
-      (Math.min(1, metrics.questions / 2) * 20) +
-      (Math.min(1, metrics.emotionalWords / 3) * 20)
-    ));
+  // *** CHANGED FUNCTION: Now it ONLY calls ChatGPT and sets a minimal analysis object. ***
+  const analyzeResponse = async () => {
+    let chatgptFeedback = '';
+    console.log("transcript state ", transcript)
+    try {
+      const response = await axios.post('/api/analyze', {
+        transcript: transcript
+      });
+      console.log(response)
+      const data = await response.json();
+      chatgptFeedback = data.feedback; 
+    } catch (error) {
+      console.error('Error calling ChatGPT:', error);
+    }
 
+    // Provide placeholders for score, metrics, improvements, etc.
     setAnalysis({
-      score,
-      metrics,
-      improvements,
+      score: 50,                   // Dummy / placeholder
+      metrics: {},                 // Empty since we've removed our local analysis
+      improvements: [],            // Empty placeholder
+      chatgptFeedback,            // ChatGPT’s advice
       generalTips: [
         "Vary your tone and pace to maintain interest",
         "Use specific examples to illustrate your points",
@@ -137,7 +107,7 @@ const BoringOMeter = () => {
         "Keep stories concise and focused"
       ]
     });
-    
+
     setStep('results');
   };
 
@@ -150,17 +120,8 @@ const BoringOMeter = () => {
 
   const renderTranscriptWithHighlights = () => {
     if (!analysis || !transcript) return transcript;
-    
-    let highlightedText = transcript;
-    const highlights = analysis.improvements.sort((a, b) => b.position - a.position);
-    
-    highlights.forEach(improvement => {
-      const before = highlightedText.slice(0, improvement.position);
-      const after = highlightedText.slice(improvement.position + improvement.text.length);
-      highlightedText = `${before}<mark title="${improvement.suggestion}">${improvement.text}</mark>${after}`;
-    });
-    
-    return <div dangerouslySetInnerHTML={{ __html: highlightedText }} />;
+    // Since we're no longer generating improvements locally, just return the transcript as-is
+    return <div>{transcript}</div>;
   };
 
   return (
@@ -168,14 +129,8 @@ const BoringOMeter = () => {
       {step === 'prompt' && (
         <div className={styles.card}>
           <div className={styles.cardHeader}>
-          <p style={{ textAlign: 'center' }}>              
-            Boring-O-Meter
-            </p>
-            <h2 >
-              {/* <MessageCircle className={styles.icon} /> */}
-            🥱
-              How boring are you?
-            </h2>
+            <p style={{ textAlign: 'center' }}>Boring-O-Meter</p>
+            <h2>🥱 How boring are you?</h2>
           </div>
           <div className={styles.cardContent}>
             <div style={{ border: '1px solid #ccc', borderRadius: '8px', padding: '1rem', marginBottom: '1rem' }}>
@@ -228,6 +183,13 @@ const BoringOMeter = () => {
                 {renderTranscriptWithHighlights()}
               </div>
             </div>
+
+            {analysis.chatgptFeedback && (
+              <div className={styles.section}>
+                <h3>ChatGPT Feedback:</h3>
+                <p>{analysis.chatgptFeedback}</p>
+              </div>
+            )}
 
             <div className={styles.section}>
               <h3>Tips for Improvement:</h3>
