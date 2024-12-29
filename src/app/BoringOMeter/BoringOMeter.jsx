@@ -86,9 +86,7 @@ const BoringOMeter = () => {
       const response = await axios.post('/api/analyze', {
         transcript: transcript
       });
-      console.log(response)
-      const data = await response.json();
-      chatgptFeedback = data.feedback; 
+      chatgptFeedback = response.data.feedback; 
     } catch (error) {
       console.error('Error calling ChatGPT:', error);
     }

@@ -20,7 +20,6 @@ export async function POST(request) {
   try {
     const res = await request.json();
     const transcript = res["transcript"];
-    console.log("transcript ", transcript);
     const message = {
       model: "gpt-4", // or gpt-4, etc.
       messages: [
@@ -32,7 +31,7 @@ export async function POST(request) {
     const completion = await openai.chat.completions.create(message);
     const feedback =
       completion.choices?.[0]?.message?.content ?? "No feedback available.";
-    console.log("completion message: ", message);
+    console.log("completion message: ", feedback);
     return NextResponse.json({ feedback }); // App Router uses NextResponse
   } catch (error) {
     console.error(error);
