@@ -27,26 +27,35 @@ const CONVERSATION_PROMPTS = [
 function useSpeechRecognition(onComplete) {
   const [transcript, setTranscript] = useState('');
   const recognitionRef = useRef(null);
+  const [lastResultIndex, setLastResultIndex] = useState(0);
+
 
   useEffect(() => {
     // Only set up speech recognition if the browser supports it
     if (typeof window !== 'undefined' && 'webkitSpeechRecognition' in window) {
       recognitionRef.current = new window.webkitSpeechRecognition();
-      recognitionRef.current.continuous = true;
+      recognitionRef.current.continuous = false;
       recognitionRef.current.interimResults = true;
 
       // On every result, append the finalized pieces to our transcript
-      recognitionRef.current.onresult = (event) => {
-        let finalTranscript = '';
-        for (let i = 0; i < event.results.length; i++) {
-          if (event.results[i].isFinal) {
-            finalTranscript += event.results[i][0].transcript;
-          }
+        recognitionRef.current.onresult = (event) => {
+        let newTranscript = '';
+
+        // Only handle new results from `lastResultIndex`
+        for (let i = lastResultIndex; i < event.results.length; i++) {
+            if (event.results[i].isFinal) {
+            newTranscript += event.results[i][0].transcript;
+            }
         }
-        if (finalTranscript) {
-          setTranscript((prev) => prev + finalTranscript);
+
+        // Update the transcript state if there's any new text
+        if (newTranscript) {
+            setTranscript((prev) => prev + newTranscript);
         }
-      };
+
+        // Update `lastResultIndex` so we don't re-append old data
+        setLastResultIndex(event.results.length);
+        };
     }
   }, [onComplete]);
 
@@ -114,7 +123,7 @@ export default function BoringOMeter() {
   }, []);
 
   useEffect(() => {
-    if (transcript) {
+    if (transcript && !isRecording) {
         analyzeResponse()
     }
     }, [isRecording])
