@@ -226,6 +226,17 @@ export default function BoringOMeter() {
       {step === 'recording' && (
         <div className={styles.card}>
           <div className={styles.cardContent}>
+          <div
+              style={{
+                border: '1px solid #ccc',
+                borderRadius: '8px',
+                padding: '1rem',
+                marginBottom: '1rem'
+              }}
+            >
+              <p style={{ fontWeight: 'bold', marginBottom: '0.5rem' }}>Prompt</p>
+              <p className={styles.promptText}>{currentPrompt}</p>
+            </div>
             <div
               className={styles.recordingIndicator}
               style={{ display: 'flex', justifyContent: 'center' }}
