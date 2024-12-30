@@ -94,27 +94,36 @@ export default function BoringOMeter() {
     let chatgptFeedback = '';
     try {
       const response = await axios.post('/api/analyze', { transcript });
-      chatgptFeedback = response.data.feedback;
+      const feedbackRawObject = response.data.feedback;
+      const chatgptFeedbackJson = JSON.parse(feedbackRawObject);
+      console.log(chatgptFeedbackJson);
+      const engagementScore = chatgptFeedbackJson.Score;
+    chatgptFeedback = chatgptFeedbackJson.Feedback;
+
+      console.log("engagementScore: ", engagementScore)
+      console.log("feedback: ", chatgptFeedback)
+
+    setAnalysis({
+        score: engagementScore,                   // Dummy placeholder
+        metrics: {},                 // (no local analysis for now)
+        improvements: [],            // (placeholder)
+        chatgptFeedback,
+        generalTips: [
+          "Vary your tone and pace to maintain interest",
+          "Use specific examples to illustrate your points",
+          "Include your listener by asking their opinion",
+          "Share genuine emotions and reactions",
+          "Keep stories concise and focused"
+        ]
+      });
+  
+      setStep('results');
     } catch (error) {
       console.error('Error calling ChatGPT:', error);
     }
 
     // Example placeholder analysis
-    setAnalysis({
-      score: 50,                   // Dummy placeholder
-      metrics: {},                 // (no local analysis for now)
-      improvements: [],            // (placeholder)
-      chatgptFeedback,
-      generalTips: [
-        "Vary your tone and pace to maintain interest",
-        "Use specific examples to illustrate your points",
-        "Include your listener by asking their opinion",
-        "Share genuine emotions and reactions",
-        "Keep stories concise and focused"
-      ]
-    });
-
-    setStep('results');
+    
   };
 
   // Use our custom hook, passing in analyzeResponse as the `onComplete` callback

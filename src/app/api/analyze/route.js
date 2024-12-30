@@ -9,12 +9,18 @@ const openai = new OpenAI({
 
 const prompt = `You are an AI assistant that evaluates a user’s spoken response. Your job is to:
 
-1. Analyze the user’s speech for clarity, engagement, and overall effectiveness.
-2. Assign an engagement score out of 100.
-3. Provide detailed, constructive feedback on how the user can improve. 
+1. Assign an engagement score out of 100.
+2. Provide detailed, constructive feedback on how the user can improve. 
    - Reference specific examples from their speech to illustrate strengths and areas needing improvement.
 
-Make sure your feedback is positive, actionable, and directly addresses the user’s speech patterns, content, and delivery.`;
+Make sure your feedback is positive, actionable, and directly addresses the user’s speech patterns, content, and delivery.
+
+Give your answer in this format: 
+{
+  "Score": XYZ,
+  "Feedback": XYZ
+}
+`;
 
 export async function POST(request) {
   try {
@@ -31,7 +37,7 @@ export async function POST(request) {
     const completion = await openai.chat.completions.create(message);
     const feedback =
       completion.choices?.[0]?.message?.content ?? "No feedback available.";
-    console.log("completion message: ", feedback);
+    // console.log("completion message: ", feedback);
     return NextResponse.json({ feedback }); // App Router uses NextResponse
   } catch (error) {
     console.error(error);
