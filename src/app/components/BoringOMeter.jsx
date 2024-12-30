@@ -201,24 +201,28 @@ export default function BoringOMeter() {
             <p className="text-gray-600">{transcript}</p>
           </div>
 
-          {analysis.chatgptFeedback && (
-            <div className="bg-white rounded-xl p-6 mb-6">
-              <h3 className="text-lg font-semibold text-gray-700 mb-3">ChatGPT Feedback:</h3>
-              <p className="text-gray-600">{analysis.chatgptFeedback}</p>
-            </div>
-          )}
+          <div className="flex flex-col md:flex-row gap-6">
+            {analysis.chatgptFeedback && (
+              <div className="bg-white rounded-xl p-6 mb-6 md:w-1/2">
+                <h3 className="text-lg font-semibold text-gray-700 mb-3">ChatGPT Feedback:</h3>
+                <p className="text-gray-600">{analysis.chatgptFeedback}</p>
+              </div>
+            )}
 
-          <div className="bg-white rounded-xl p-6 mb-6">
-            <h3 className="text-lg font-semibold text-gray-700 mb-3">Tips for Improvement:</h3>
-            <ul className="space-y-3">
-              {analysis.generalTips.map((tip, index) => (
-                <li key={index} className="flex items-start gap-3 text-gray-600">
-                  <ArrowRight className="w-5 h-5 mt-1 flex-shrink-0 text-purple-500" />
-                  <span>{tip}</span>
-                </li>
-              ))}
-            </ul>
+            <div className="bg-white rounded-xl p-6 mb-6 md:w-1/2">
+              <h3 className="text-lg font-semibold text-gray-700 mb-3">Tips for Improvement:</h3>
+              <ul className="space-y-3">
+                {analysis.generalTips.map((tip, index) => (
+                  <li key={index} className="flex items-start gap-3 text-gray-600">
+                    <ArrowRight className="w-5 h-5 mt-1 flex-shrink-0 text-purple-500" />
+                    <span>{tip}</span>
+                  </li>
+                ))}
+              </ul>
+            </div>
           </div>
+
+          
           <div className="flex items-center justify-center">          
             <button
             onClick={resetApp}

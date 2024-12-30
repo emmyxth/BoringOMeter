@@ -23,7 +23,7 @@ const EngagementScale = ({ score = 0 }) => {
       <div className="space-y-4">
         <div className="flex items-center justify-between">
           <h2 className="text-xl font-bold bg-gradient-to-r from-purple-600 to-pink-600 bg-clip-text text-transparent">
-            Engagement Score
+            Boring-O-Meter
           </h2>
           <span className="text-2xl font-semibold text-gray-700">
             {getEmoji(score)} {Math.round(score)}%
