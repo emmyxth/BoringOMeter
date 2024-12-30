@@ -1,14 +1,9 @@
 'use client';
-
 import React, { useState, useRef, useEffect } from 'react';
 import { Mic, StopCircle, RefreshCw, ArrowRight, Loader2 } from 'lucide-react';
-import EngagementScale from './EngagementScale'
-import styles from './BoringOMeter.module.css';
+import EngagementScale from './EngagementScale';
 import axios from 'axios';
 
-//
-// 1. Define conversation prompts
-//
 const CONVERSATION_PROMPTS = [
   "What's something funny that happened to you recently?",
   "Tell me about yourself - what makes you unique?",
@@ -22,14 +17,10 @@ const CONVERSATION_PROMPTS = [
   "What's the most interesting conversation you've had lately?"
 ];
 
-//
-// 2. Custom Hook for Speech Recognition
-//
 function useSpeechRecognition(onComplete) {
   const [transcript, setTranscript] = useState('');
   const recognitionRef = useRef(null);
   const [lastResultIndex, setLastResultIndex] = useState(0);
-
 
   useEffect(() => {
     if (typeof window !== 'undefined' && 'webkitSpeechRecognition' in window) {
@@ -37,25 +28,18 @@ function useSpeechRecognition(onComplete) {
       recognitionRef.current.continuous = true;
       recognitionRef.current.interimResults = true;
 
-      // On every result, append the finalized pieces to our transcript
-        recognitionRef.current.onresult = (event) => {
+      recognitionRef.current.onresult = (event) => {
         let newTranscript = '';
-
-        // Only handle new results from `lastResultIndex`
         for (let i = lastResultIndex; i < event.results.length; i++) {
-            if (event.results[i].isFinal) {
-                newTranscript += event.results[i][0].transcript;
-            }
+          if (event.results[i].isFinal) {
+            newTranscript += event.results[i][0].transcript;
+          }
         }
-
-        // Update the transcript state if there's any new text
         if (newTranscript) {
-            setTranscript((prev) => prev + newTranscript);
+          setTranscript((prev) => prev + newTranscript);
         }
-
-        // Update `lastResultIndex` so we don't re-append old data
         setLastResultIndex(event.results.length);
-        };
+      };
     }
   }, [onComplete]);
 
@@ -72,59 +56,40 @@ function useSpeechRecognition(onComplete) {
   return { transcript, setTranscript, start, stop };
 }
 
-//
-// 3. Main BoringOMeter Component
-//
 export default function BoringOMeter() {
-  // Steps: prompt -> recording -> results
   const [step, setStep] = useState('prompt');
   const [currentPrompt, setCurrentPrompt] = useState(CONVERSATION_PROMPTS[0]);
   const [isRecording, setIsRecording] = useState(false);
   const [analysis, setAnalysis] = useState(null);
   const mediaRecorder = useRef(null);
 
-  // The callback that runs when speech ends
   const analyzeResponse = async () => {
-    setStep('analyzing'); // Show loading screen first
-    // console.log("Final transcript state:", transcript);
-
-    // Call ChatGPT (or any API) with the transcript
-    let chatgptFeedback = '';
+    setStep('analyzing');
     try {
       const response = await axios.post('/api/analyze', { transcript });
       const feedbackRawObject = response.data.feedback;
       const chatgptFeedbackJson = JSON.parse(feedbackRawObject);
-    //   console.log(chatgptFeedbackJson);
       const engagementScore = chatgptFeedbackJson.Score;
-    chatgptFeedback = chatgptFeedbackJson.Feedback;
+      const chatgptFeedback = chatgptFeedbackJson.Feedback;
 
-    //   console.log("engagementScore: ", engagementScore)
-    //   console.log("feedback: ", chatgptFeedback)
-
-    setAnalysis({
-        score: engagementScore,                   // Dummy placeholder
-        metrics: {},                 // (no local analysis for now)
-        improvements: [],            // (placeholder)
+      setAnalysis({
+        score: engagementScore,
+        metrics: {},
+        improvements: [],
         chatgptFeedback,
         generalTips: [
           "Vary your tone and pace to maintain interest",
           "Use specific examples to illustrate your points",
-          "Include your listener by asking their opinion",
           "Share genuine emotions and reactions",
           "Keep stories concise and focused"
         ]
       });
-  
       setStep('results');
     } catch (error) {
       console.error('Error calling ChatGPT:', error);
     }
-
-    // Example placeholder analysis
-    
   };
 
-  // Use our custom hook, passing in analyzeResponse as the `onComplete` callback
   const { transcript, setTranscript, start, stop } = useSpeechRecognition(analyzeResponse);
 
   useEffect(() => {
@@ -134,22 +99,15 @@ export default function BoringOMeter() {
   }, []);
 
   useEffect(() => {
-    console.log("transcript: ", transcript)
-    console.log("isRecording: ", isRecording)
     if (transcript && !isRecording) {
-        analyzeResponse()
+      analyzeResponse();
     }
-    }, [isRecording, transcript])
+  }, [isRecording, transcript]);
 
-  //
-  // Start Recording: get user media, start speech recognition, etc.
-  //
   const startRecording = async () => {
     try {
       const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
       mediaRecorder.current = new MediaRecorder(stream);
-
-      // Start speech recognition
       start();
       setIsRecording(true);
       setStep('recording');
@@ -158,22 +116,14 @@ export default function BoringOMeter() {
     }
   };
 
-  //
-  // Stop Recording: stop mediaRecorder (optional) + stop speech recognition
-  //
   const stopRecording = () => {
     if (mediaRecorder.current) {
       mediaRecorder.current.stop();
     }
     stop();
-    console.log("STOPPED RECORDING")
     setIsRecording(false);
-
   };
 
-  //
-  // Reset everything
-  //
   const resetApp = () => {
     setStep('prompt');
     setTranscript('');
@@ -183,139 +133,100 @@ export default function BoringOMeter() {
     );
   };
 
-  //
-  // Optionally highlight transcript, but for now just display
-  //
-  const renderTranscriptWithHighlights = () => {
-    if (!analysis || !transcript) return transcript;
-    return <div>{transcript}</div>;
-  };
-
-  //
-  // Render UI by step
-  //
   return (
-    <div className={styles.container}>
+    <div className="mx-auto p-6 flex items-center justify-center h-screen">
       {step === 'prompt' && (
-        <div className={styles.card}>
-          <div className={styles.cardHeader}>
-            <p style={{ textAlign: 'center' }}>Boring-O-Meter</p>
-            <h2>🥱 How boring are you?</h2>
-          </div>
-          <div className={styles.cardContent}>
-            <div
-              style={{
-                border: '1px solid #ccc',
-                borderRadius: '8px',
-                padding: '1rem',
-                marginBottom: '1rem'
-              }}
-            >
-              <p style={{ fontWeight: 'bold', marginBottom: '0.5rem' }}>Prompt</p>
-              <p className={styles.promptText}>{currentPrompt}</p>
+        <div className="bg-gradient-to-br from-purple-50 to-pink-50 rounded-2xl shadow-lg p-6">
+          <div className="text-center mb-6">
+            <h1 className="text-3xl font-bold bg-gradient-to-r from-purple-600 to-pink-600 bg-clip-text text-transparent">
+              Boring-O-Meter
+            </h1>
+            <div className="flex items-center justify-center gap-2 mt-2">
+              <span className="text-xl font-medium text-gray-700">How boring are you?</span>
+              <span className="text-2xl animate-bounce">🥱</span>
             </div>
-            <button
-              onClick={startRecording}
-              className={`${styles.button} ${styles.primary}`}
-            >
-              <Mic className={styles.icon} />
-              Try your luck
-            </button>
           </div>
+
+          <div className="bg-white p-6 rounded-xl shadow-sm mb-6">
+            <h2 className="text-lg font-semibold text-gray-700 mb-3">Prompt</h2>
+            <p className="text-gray-600 text-lg">{currentPrompt}</p>
+          </div>
+
+          <button
+            onClick={startRecording}
+            className="w-full flex items-center justify-center gap-3 py-4 px-6 rounded-lg text-white font-medium bg-gradient-to-r from-purple-500 to-pink-500 hover:from-purple-600 hover:to-pink-600 transition-all duration-300"
+          >
+            <Mic className="w-6 h-6" />
+            <span>Try your luck</span>
+          </button>
         </div>
       )}
 
       {step === 'recording' && (
-        <div className={styles.card}>
-          <div className={styles.cardContent}>
-          <div
-              style={{
-                border: '1px solid #ccc',
-                borderRadius: '8px',
-                padding: '1rem',
-                marginBottom: '1rem'
-              }}
-            >
-              <p style={{ fontWeight: 'bold', marginBottom: '0.5rem' }}>Prompt</p>
-              <p className={styles.promptText}>{currentPrompt}</p>
-            </div>
-            <div
-              className={styles.recordingIndicator}
-              style={{ display: 'flex', justifyContent: 'center' }}
-            >
-              <Mic className={`${styles.icon} ${styles.recording}`} />
-            </div>
-            <button
-              onClick={stopRecording}
-              className={`${styles.button} ${styles.danger}`}
-            >
-              <StopCircle className={styles.icon} />
-              Stop Recording
-            </button>
+        <div className="bg-gradient-to-br from-purple-50 to-pink-50 rounded-2xl shadow-lg p-6">
+          <div className="bg-white p-6 rounded-xl shadow-sm mb-6">
+            <h2 className="text-lg font-semibold text-gray-700 mb-3">Prompt</h2>
+            <p className="text-gray-600 text-lg">{currentPrompt}</p>
           </div>
+
+          <div className="flex justify-center mb-6">
+            <Mic className="w-12 h-12 text-red-500 animate-pulse" />
+          </div>
+
+          <button
+            onClick={stopRecording}
+            className="w-full flex items-center justify-center gap-3 py-4 px-6 rounded-lg text-white font-medium bg-red-500 hover:bg-red-600 transition-all duration-300"
+          >
+            <StopCircle className="w-6 h-6" />
+            <span>Stop Recording</span>
+          </button>
         </div>
       )}
 
-      {/* New analyzing step */}
       {step === 'analyzing' && (
-        <div className={styles.card}>
-          <div className={styles.cardContent}>
-            <div
-              style={{
-                border: '1px solid #ccc',
-                borderRadius: '8px',
-                padding: '1rem',
-                marginBottom: '1rem'
-              }}
-            >
-              <p style={{ fontWeight: 'bold', marginBottom: '0.5rem' }}>Analyzing your response...</p>
-            </div>
-            <div className={styles.recordingIndicator} style={{ display: 'flex', justifyContent: 'center' }}>
-            <Loader2 className={`${styles.icon} ${styles.spinning}`} />
-            </div>
+        <div className="bg-gradient-to-br from-purple-50 to-pink-50 rounded-2xl shadow-lg p-6">
+          <div className="text-center">
+            <h2 className="text-xl font-semibold text-gray-700 mb-6">Analyzing your response...</h2>
+            <Loader2 className="w-12 h-12 text-purple-500 animate-spin mx-auto" />
           </div>
         </div>
       )}
 
       {step === 'results' && analysis && (
-        <div className={styles.card}>
-          <div className={styles.cardContent}>
+        <div className="bg-gradient-to-br from-purple-50 to-pink-50 rounded-2xl shadow-lg p-10 mt-10">
           <EngagementScale score={analysis.score} />
 
-            <div className={styles.section}>
-              <h3>Your Response:</h3>
-              <div className={styles.transcript}>
-                {renderTranscriptWithHighlights()}
-              </div>
-            </div>
-
-            {analysis.chatgptFeedback && (
-              <div className={styles.section}>
-                <h3>ChatGPT Feedback:</h3>
-                <p>{analysis.chatgptFeedback}</p>
-              </div>
-            )}
-
-            <div className={styles.section}>
-              <h3>Tips for Improvement:</h3>
-              <ul className={styles.tipsList}>
-                {analysis.generalTips.map((tip, index) => (
-                  <li key={index}>
-                    <ArrowRight className={styles.icon} />
-                    <span>{tip}</span>
-                  </li>
-                ))}
-              </ul>
-            </div>
-
-            <button
-              onClick={resetApp}
-              className={`${styles.button} ${styles.primary} ${styles.fullWidth}`}
-            >
-              <RefreshCw className={styles.icon} />
-              Try Another Prompt
-            </button>
+          <div className="bg-white rounded-xl p-6 mb-6">
+            <h3 className="text-lg font-semibold text-gray-700 mb-3">Your Response:</h3>
+            <p className="text-gray-600">{transcript}</p>
           </div>
+
+          {analysis.chatgptFeedback && (
+            <div className="bg-white rounded-xl p-6 mb-6">
+              <h3 className="text-lg font-semibold text-gray-700 mb-3">ChatGPT Feedback:</h3>
+              <p className="text-gray-600">{analysis.chatgptFeedback}</p>
+            </div>
+          )}
+
+          <div className="bg-white rounded-xl p-6 mb-6">
+            <h3 className="text-lg font-semibold text-gray-700 mb-3">Tips for Improvement:</h3>
+            <ul className="space-y-3">
+              {analysis.generalTips.map((tip, index) => (
+                <li key={index} className="flex items-start gap-3 text-gray-600">
+                  <ArrowRight className="w-5 h-5 mt-1 flex-shrink-0 text-purple-500" />
+                  <span>{tip}</span>
+                </li>
+              ))}
+            </ul>
+          </div>
+          <div className="flex items-center justify-center">          
+            <button
+            onClick={resetApp}
+            className="w-[20%] flex items-center justify-center gap-3 py-4 px-6 rounded-lg text-white font-medium bg-gradient-to-r from-purple-500 to-pink-500 hover:from-purple-600 hover:to-pink-600 transition-all duration-300"
+          >
+            <RefreshCw className="w-6 h-6" />
+            <span>Try Another Prompt</span>
+          </button></div>
         </div>
       )}
     </div>

@@ -2,7 +2,7 @@ import BoringOMeter from "./components/BoringOMeter";
 
 export default function Home() {
   return (
-    <main>
+    <main className="bg-white h-screen">
       <BoringOMeter />
     </main>
   );
