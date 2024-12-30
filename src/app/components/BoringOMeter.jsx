@@ -21,25 +21,23 @@ const CONVERSATION_PROMPTS = [
 function useSpeechRecognition(onComplete) {
   const [transcript, setTranscript] = useState('');
   const recognitionRef = useRef(null);
-  const [lastResultIndex, setLastResultIndex] = useState(0);
 
   useEffect(() => {
     if (typeof window !== 'undefined' && 'webkitSpeechRecognition' in window) {
       recognitionRef.current = new window.webkitSpeechRecognition();
       recognitionRef.current.continuous = true;
-      recognitionRef.current.interimResults = true;
+      recognitionRef.current.interimResults = false; // Only final results
 
       recognitionRef.current.onresult = (event) => {
-        let newTranscript = '';
-        for (let i = lastResultIndex; i < event.results.length; i++) {
+        let newFinal = '';
+        for (let i = event.resultIndex; i < event.results.length; i++) {
           if (event.results[i].isFinal) {
-            newTranscript += event.results[i][0].transcript;
+            newFinal += event.results[i][0].transcript;
           }
         }
-        if (newTranscript) {
-          setTranscript((prev) => prev + newTranscript);
+        if (newFinal) {
+          setTranscript((prev) => prev + newFinal);
         }
-        setLastResultIndex(event.results.length);
       };
     }
   }, [onComplete]);
@@ -51,18 +49,19 @@ function useSpeechRecognition(onComplete) {
   const stop = () => {
     recognitionRef.current?.stop();
     recognitionRef.current = null;
-    setLastResultIndex(0);
   };
 
   return { transcript, setTranscript, start, stop };
 }
-
 export default function BoringOMeter() {
   const [step, setStep] = useState('prompt');
   const [currentPrompt, setCurrentPrompt] = useState(CONVERSATION_PROMPTS[0]);
   const [isRecording, setIsRecording] = useState(false);
   const [analysis, setAnalysis] = useState(null);
+
+  // Refs for audio capturing
   const mediaRecorder = useRef(null);
+  const streamRef = useRef(null);
 
   const analyzeResponse = async () => {
     setStep('analyzing');
@@ -107,8 +106,14 @@ export default function BoringOMeter() {
 
   const startRecording = async () => {
     try {
+      // 1) Request audio stream
       const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+      streamRef.current = stream;
+
+      // 2) Create MediaRecorder
       mediaRecorder.current = new MediaRecorder(stream);
+
+      // 3) Start speech recognition
       start();
       setIsRecording(true);
       setStep('recording');
@@ -118,11 +123,20 @@ export default function BoringOMeter() {
   };
 
   const stopRecording = () => {
-    if (mediaRecorder.current) {
+    // 1) Stop MediaRecorder
+    if (mediaRecorder.current && mediaRecorder.current.state !== 'inactive') {
       mediaRecorder.current.stop();
     }
+
+    // 2) Stop SpeechRecognition
     stop();
     setIsRecording(false);
+
+    // 3) Stop the audio tracks
+    if (streamRef.current) {
+      streamRef.current.getTracks().forEach((track) => track.stop());
+      streamRef.current = null;
+    }
   };
 
   const resetApp = () => {
