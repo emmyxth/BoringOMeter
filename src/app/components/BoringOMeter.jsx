@@ -1,7 +1,8 @@
 'use client';
 
 import React, { useState, useRef, useEffect } from 'react';
-import { Mic, StopCircle, RefreshCw, ArrowRight } from 'lucide-react';
+import { Mic, StopCircle, RefreshCw, ArrowRight, Loader2 } from 'lucide-react';
+import EngagementScale from './EngagementScale'
 import styles from './BoringOMeter.module.css';
 import axios from 'axios';
 
@@ -84,7 +85,8 @@ export default function BoringOMeter() {
 
   // The callback that runs when speech ends
   const analyzeResponse = async () => {
-    console.log("Final transcript state:", transcript);
+    setStep('analyzing'); // Show loading screen first
+    // console.log("Final transcript state:", transcript);
 
     // Call ChatGPT (or any API) with the transcript
     let chatgptFeedback = '';
@@ -92,12 +94,12 @@ export default function BoringOMeter() {
       const response = await axios.post('/api/analyze', { transcript });
       const feedbackRawObject = response.data.feedback;
       const chatgptFeedbackJson = JSON.parse(feedbackRawObject);
-      console.log(chatgptFeedbackJson);
+    //   console.log(chatgptFeedbackJson);
       const engagementScore = chatgptFeedbackJson.Score;
     chatgptFeedback = chatgptFeedbackJson.Feedback;
 
-      console.log("engagementScore: ", engagementScore)
-      console.log("feedback: ", chatgptFeedback)
+    //   console.log("engagementScore: ", engagementScore)
+    //   console.log("feedback: ", chatgptFeedback)
 
     setAnalysis({
         score: engagementScore,                   // Dummy placeholder
@@ -254,17 +256,31 @@ export default function BoringOMeter() {
         </div>
       )}
 
+      {/* New analyzing step */}
+      {step === 'analyzing' && (
+        <div className={styles.card}>
+          <div className={styles.cardContent}>
+            <div
+              style={{
+                border: '1px solid #ccc',
+                borderRadius: '8px',
+                padding: '1rem',
+                marginBottom: '1rem'
+              }}
+            >
+              <p style={{ fontWeight: 'bold', marginBottom: '0.5rem' }}>Analyzing your response...</p>
+            </div>
+            <div className={styles.recordingIndicator} style={{ display: 'flex', justifyContent: 'center' }}>
+            <Loader2 className={`${styles.icon} ${styles.spinning}`} />
+            </div>
+          </div>
+        </div>
+      )}
+
       {step === 'results' && analysis && (
         <div className={styles.card}>
           <div className={styles.cardContent}>
-            <h2>Engagement Score: {Math.round(analysis.score)}</h2>
-
-            <div className={styles.progressBar}>
-              <div
-                className={styles.progressBarFill}
-                style={{ width: `${analysis.score}%` }}
-              />
-            </div>
+          <EngagementScale score={analysis.score} />
 
             <div className={styles.section}>
               <h3>Your Response:</h3>

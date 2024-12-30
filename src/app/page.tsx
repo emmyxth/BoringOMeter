@@ -1,4 +1,4 @@
-import BoringOMeter from "./BoringOMeter/BoringOMeter";
+import BoringOMeter from "./components/BoringOMeter";
 
 export default function Home() {
   return (
