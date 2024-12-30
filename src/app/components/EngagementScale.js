@@ -1,4 +1,5 @@
 import React from "react";
+import { rubikMono } from "../layout";
 
 const EngagementScale = ({ score = 0 }) => {
   // Function to determine gradient colors based on score
@@ -22,7 +23,9 @@ const EngagementScale = ({ score = 0 }) => {
     <div className="w-full bg-white rounded-xl p-6 mb-6 shadow-sm">
       <div className="space-y-4">
         <div className="flex items-center justify-between">
-          <h2 className="text-xl font-bold bg-gradient-to-r from-purple-600 to-pink-600 bg-clip-text text-transparent">
+          <h2
+            className={`${rubikMono.className} text-3xl font-bold bg-gradient-to-r from-purple-600 to-pink-600 bg-clip-text text-transparent`}
+          >
             Boring-O-Meter
           </h2>
           <span className="text-2xl font-semibold text-gray-700">

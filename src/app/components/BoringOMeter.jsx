@@ -2,6 +2,7 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { Mic, StopCircle, RefreshCw, ArrowRight, Loader2 } from 'lucide-react';
 import EngagementScale from './EngagementScale';
+import { rubikMono } from '../layout'; 
 import axios from 'axios';
 
 const CONVERSATION_PROMPTS = [
@@ -138,7 +139,7 @@ export default function BoringOMeter() {
       {step === 'prompt' && (
         <div className="bg-gradient-to-br from-purple-50 to-pink-50 rounded-2xl shadow-lg p-6">
           <div className="text-center mb-6">
-            <h1 className="text-3xl font-bold bg-gradient-to-r from-purple-600 to-pink-600 bg-clip-text text-transparent">
+            <h1 className={`${rubikMono.className} text-4xl font-bold bg-gradient-to-r from-purple-600 to-pink-600 bg-clip-text text-transparent`}>
               Boring-O-Meter
             </h1>
             <div className="flex items-center justify-center gap-2 mt-2">

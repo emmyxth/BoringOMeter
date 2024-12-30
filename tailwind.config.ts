@@ -12,6 +12,9 @@ export default {
         background: "var(--background)",
         foreground: "var(--foreground)",
       },
+      fontFamily: {
+        'rubik-mono': ['var(--font-rubik-mono-one)']  // This uses Next.js CSS variable
+      }
     },
   },
   plugins: [],
