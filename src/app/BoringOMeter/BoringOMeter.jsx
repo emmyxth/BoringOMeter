@@ -34,7 +34,7 @@ function useSpeechRecognition(onComplete) {
     // Only set up speech recognition if the browser supports it
     if (typeof window !== 'undefined' && 'webkitSpeechRecognition' in window) {
       recognitionRef.current = new window.webkitSpeechRecognition();
-      recognitionRef.current.continuous = false;
+      recognitionRef.current.continuous = true;
       recognitionRef.current.interimResults = true;
 
       // On every result, append the finalized pieces to our transcript
@@ -58,6 +58,10 @@ function useSpeechRecognition(onComplete) {
         };
     }
   }, [onComplete]);
+
+//   useEffect(() => {
+//     console.log("updated transcript", transcript)
+//   }, [transcript]);
 
   // Provide start and stop methods for the parent to control recognition
   const start = () => {
@@ -123,10 +127,12 @@ export default function BoringOMeter() {
   }, []);
 
   useEffect(() => {
+    console.log("transcript: ", transcript)
+    console.log("isRecording: ", isRecording)
     if (transcript && !isRecording) {
         analyzeResponse()
     }
-    }, [isRecording])
+    }, [isRecording, transcript])
 
   //
   // Start Recording: get user media, start speech recognition, etc.
