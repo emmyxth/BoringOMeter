@@ -31,7 +31,6 @@ function useSpeechRecognition(onComplete) {
 
 
   useEffect(() => {
-    // Only set up speech recognition if the browser supports it
     if (typeof window !== 'undefined' && 'webkitSpeechRecognition' in window) {
       recognitionRef.current = new window.webkitSpeechRecognition();
       recognitionRef.current.continuous = true;
@@ -44,7 +43,7 @@ function useSpeechRecognition(onComplete) {
         // Only handle new results from `lastResultIndex`
         for (let i = lastResultIndex; i < event.results.length; i++) {
             if (event.results[i].isFinal) {
-            newTranscript += event.results[i][0].transcript;
+                newTranscript += event.results[i][0].transcript;
             }
         }
 
@@ -59,17 +58,14 @@ function useSpeechRecognition(onComplete) {
     }
   }, [onComplete]);
 
-//   useEffect(() => {
-//     console.log("updated transcript", transcript)
-//   }, [transcript]);
-
-  // Provide start and stop methods for the parent to control recognition
   const start = () => {
     recognitionRef.current?.start();
   };
 
   const stop = () => {
     recognitionRef.current?.stop();
+    recognitionRef.current = null;
+    setLastResultIndex(0);
   };
 
   return { transcript, setTranscript, start, stop };
