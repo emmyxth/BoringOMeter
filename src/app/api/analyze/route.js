@@ -14,7 +14,7 @@ const prompt = `You are an AI assistant that evaluates a user’s spoken respons
    - Reference specific examples from their speech to illustrate strengths and areas needing improvement.
 
    Keep your response to under 50 words. 
-   Have a critical tone, keeping it funny. Be harsher in your scoring of the user's speech
+   Have a critical tone, keeping it funny. Be as HARSH AS POSSIBLE WHEN SCORING THE USER'S SPEECH
 
 Give your answer in this format: 
 {
