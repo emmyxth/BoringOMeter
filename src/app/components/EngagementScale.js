@@ -1,5 +1,4 @@
 import React from "react";
-import { rubikMono } from "../layout";
 import { Rubik_Mono_One } from "next/font/google";
 
 export const rubikMono = Rubik_Mono_One({
