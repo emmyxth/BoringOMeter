@@ -2,8 +2,16 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { Mic, StopCircle, RefreshCw, ArrowRight, Loader2 } from 'lucide-react';
 import EngagementScale from './EngagementScale';
-import { rubikMono } from '../layout'; 
 import axios from 'axios';
+
+import { Rubik_Mono_One } from "next/font/google";
+
+export const rubikMono = Rubik_Mono_One({
+  weight: "400",
+  subsets: ["latin"],
+  display: "swap",
+});
+
 
 const CONVERSATION_PROMPTS = [
   "What's something funny that happened to you recently?",
